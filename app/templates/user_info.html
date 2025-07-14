@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% import "bootstrap_wtf.html" as wtf %}
+
+{% block content %}
+    <h1>Let's get to know you!</h1>
+    <h3><u>Personal Information</u></h3>
+  <div class="container">
+    <form method="post" action="">
+      {{ form.hidden_tag() }}
+      {{ wtf.form_field(form.age) }}
+      {{ wtf.form_field(form.gender) }}
+
+      <div class="form-group">
+        <label for="height">Height (in cm): <span id="height_value">{{ form.height.data or 0 }}</span></label>
+        <input
+          type="range"
+          id="height"
+          name="{{ form.height.name }}"
+          min="100" max="300"
+          value="{{ form.height.data or 0 }}"
+          oninput="document.getElementById('height_value').innerText = this.value"
+          class="form-control-range"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="weight">Weight (in kg): <span id="weight_value">{{ form.weight.data or 0 }}</span></label>
+        <input
+          type="range"
+          id="weight"
+          name="{{ form.weight.name }}"
+          min="30" max="200"
+          value="{{ form.weight.data or 0 }}"
+          oninput="document.getElementById('weight_value').innerText = this.value"
+          class="form-control-range"
+        >
+      </div>
+        <p>
+        <h3><u>Dietary Preferences</u></h3>
+        </p>
+      {{ wtf.form_field(form.diet_type) }}
+      {{ wtf.form_field(form.allergies) }}
+        <h3><u>Health goals</u></h3>
+      {{ wtf.form_field(form.primary_goal) }}
+      {{ wtf.form_field(form.health_conditions) }}
+      {{ wtf.form_field(form.activity_level) }}
+      {{ wtf.form_field(form.submit) }}
+        <p>
+        <small>You can edit this anytime in your profile.</small>
+        </p>
+    </form>
+  </div>
+{% endblock %}

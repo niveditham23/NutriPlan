@@ -1,6 +1,6 @@
 from flask_login import current_user
 from flask_wtf import FlaskForm
-from wtforms import SubmitField, HiddenField, StringField, PasswordField, BooleanField, SelectField,IntegerField
+from wtforms import SubmitField, HiddenField, StringField, PasswordField, BooleanField, SelectField,IntegerField,SelectMultipleField,widgets
 from wtforms.fields.simple import TextAreaField
 from wtforms.validators import DataRequired, EqualTo, NumberRange, ValidationError, Email, Optional, Length
 from app import db
@@ -12,9 +12,8 @@ class ChooseForm(FlaskForm):
     choice = HiddenField('Choice')
 
 class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
-    remember_me = BooleanField('Remember Me')
     submit = SubmitField('Sign In')
 
 
@@ -48,3 +47,21 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(email=email.data).first()
         if user:
             raise ValidationError('Email already registered. Please log in or use a different email.')
+
+
+class MultiCheckboxField(SelectMultipleField):
+    widget = widgets.ListWidget(prefix_label=False)
+    option_widget = widgets.CheckboxInput()
+
+
+class UserInfoForm(FlaskForm):
+    age = IntegerField('Age', validators=[DataRequired(), NumberRange(min=1, max=120)])
+    gender = SelectField('Gender',choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')],validators=[DataRequired()])
+    height = IntegerField('Height (in cm)', validators=[DataRequired(), NumberRange(min=100, max=300)])
+    weight = IntegerField('Weight (in kg)', validators=[DataRequired(), NumberRange(min=30, max=200)])
+    diet_type = SelectField('Diet Type',choices=[('Veg', 'Vegetarian'),('Non-Veg', 'Non-Vegetarian'),('Vegan', 'Vegan'),('Keto', 'Keto'),('Paleo', 'Paleo'),('Mediterranean','Mediterranean'),('Other', 'Other')],validators=[DataRequired()])
+    allergies = MultiCheckboxField('Allergies',choices=[('Gluten', 'Gluten'),('Treenut', 'Treenut'),('soya', 'Soya'),('milk', 'Milk'),('eggs', 'Eggs'),('fish', 'Fish'),('shellfish', 'Shellfish'),('wheat', 'Wheat'),('peanuts', 'Peanuts'),('sesame', 'Sesame'),('mustard', 'Mustard'),('celery', 'Celery'),('sulfites', 'Sulfites'),],validators=[Optional()])
+    primary_goal = SelectField('Primary Goal',choices=[('Lose', 'Lose Weight'),('Maintain', 'Maintain Weight'),('Gain', 'Gain Weight')],validators=[DataRequired()])
+    health_conditions = MultiCheckboxField('Health Conditions',choices=[('Diabetes', 'Diabetes'),('PCOS', 'PCOS'),('Thyroid', 'Thyroid')],validators=[Optional()])
+    activity_level = SelectField('Activity Level',choices=[('Sedentary', 'Sedentary'),('Lightly Active', 'Lightly Active'),('Moderately Active', 'Moderately Active'),('Very Active', 'Very Active')],validators=[DataRequired()])
+    submit = SubmitField("Submit")

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2 class="mb-3"><u>Profile and Preferences</u></h2>
+
+<div class="row mb-5">
+
+    <div class="col-md-4">
+        <h5>{{ user.full_name }}</h5>
+        <p class="text-muted">{{ user.email }}</p>
+        <p><a href="{{ url_for('user_info') }}" class="btn btn-primary mt-3">Edit</a></p>
+        <form action="{{ url_for('delete_account') }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete your account?')">
+    <button type="submit" class="btn btn-danger">Delete Account</button>
+    </div>
+
+
+    <div class="col-md-8">
+        {% if user_info %}
+        <div class="list-group">
+            <div class="list-group-item">
+                <strong>Age</strong>
+                <div>{{ user_info.age }}</div>
+            </div>
+            <div class="list-group-item">
+                <strong>Gender</strong>
+                <div>{{ user_info.gender }}</div>
+            </div>
+            <div class="list-group-item">
+                <strong>Height (cm)</strong>
+                <div>{{ user_info.height }}</div>
+            </div>
+            <div class="list-group-item">
+                <strong>Weight (kg)</strong>
+                <div>{{ user_info.weight }}</div>
+            </div>
+            <div class="list-group-item">
+                <strong>Diet Type</strong>
+                <div>{{ user_info.diet_type }}</div>
+            </div>
+            <div class="list-group-item">
+                <strong>Allergies</strong>
+                <div>{{ user_info.allergies or 'None' }}</div>
+            </div>
+            <div class="list-group-item">
+                <strong>Health Conditions</strong>
+                <div>{{ user_info.health_conditions or 'None' }}</div>
+            </div>
+            <div class="list-group-item">
+                <strong>Primary Goal</strong>
+                <div>{{ user_info.primary_goal }}</div>
+            </div>
+            <div class="list-group-item">
+                <strong>Activity Level</strong>
+                <div>{{ user_info.activity_level }}</div>
+            </div>
+        </div>
+        {% else %}
+        <p class="text-muted">No health info added yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

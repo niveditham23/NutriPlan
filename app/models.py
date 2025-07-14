@@ -18,6 +18,7 @@ class User(UserMixin, db.Model):
     email: so.Mapped[str] = so.mapped_column(sa.String(120), index=True, unique=True,nullable=False)
     password_hash: so.Mapped[Optional[str]] = so.mapped_column(sa.String(256))
     time:so.Mapped[datetime.datetime] = so.mapped_column(sa.DateTime,default=datetime.datetime.utcnow)
+    user_info:so.Mapped[list['UserInfo']]=relationship(back_populates="user")
 
 
     def __repr__(self):
@@ -33,3 +34,23 @@ class User(UserMixin, db.Model):
 @login.user_loader
 def load_user(id):
     return db.session.get(User, int(id))
+
+
+class UserInfo(db.Model):
+    __tablename__ = 'user_info'
+    __table_args__ = (sa.UniqueConstraint('user_id'),)
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('users.id'), index=True)
+    age: so.Mapped[int]
+    gender: so.Mapped[str]
+    height: so.Mapped[int]
+    weight: so.Mapped[int]
+    diet_type: so.Mapped[str]
+    allergies: so.Mapped[Optional[str]]
+    health_conditions: so.Mapped[Optional[str]]
+    primary_goal: so.Mapped[str]
+    activity_level: so.Mapped[str]
+    user: so.Mapped['User'] = relationship(back_populates='user_info')
+
+    def __repr__(self):
+        return f'UserInfo(id={self.id},user_id={self.user_id}, age={self.age}, gender={self.gender}, height={self.height},weight={self.weight},diet_type={self.diet_type},allergies={self.allergies},health_conditions={self.health_conditions},primary_goal={self.primary_goal},activity_level={self.activity_level})'
