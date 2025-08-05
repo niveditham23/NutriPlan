@@ -42,7 +42,26 @@
       {{ wtf.form_field(form.allergies) }}
         <h3><u>Health goals</u></h3>
       {{ wtf.form_field(form.primary_goal) }}
-      {{ wtf.form_field(form.health_conditions) }}
+
+        <div class="form-group">
+          <label>Health Conditions:</label><br>
+          {% set health_data = form.health_conditions.data or [] %}
+          {% for value, label in form.health_conditions.choices %}
+            <div class="form-check">
+              <label class="form-check-label">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  name="{{ form.health_conditions.name }}"
+                  value="{{ value }}"
+                  {% if value in health_data %}checked{% endif %}
+                > {{ label }}
+              </label>
+        </div>
+  {% endfor %}
+</div>
+
+      {{ wtf.form_field(form.other_health_condition) }}
       {{ wtf.form_field(form.activity_level) }}
       {{ wtf.form_field(form.submit) }}
         <p>

@@ -62,6 +62,14 @@ class UserInfoForm(FlaskForm):
     diet_type = SelectField('Diet Type',choices=[('Veg', 'Vegetarian'),('Non-Veg', 'Non-Vegetarian'),('Vegan', 'Vegan'),('Keto', 'Keto'),('Paleo', 'Paleo'),('Mediterranean','Mediterranean'),('Other', 'Other')],validators=[DataRequired()])
     allergies = MultiCheckboxField('Allergies',choices=[('Gluten', 'Gluten'),('Treenut', 'Treenut'),('soya', 'Soya'),('milk', 'Milk'),('eggs', 'Eggs'),('fish', 'Fish'),('shellfish', 'Shellfish'),('wheat', 'Wheat'),('peanuts', 'Peanuts'),('sesame', 'Sesame'),('mustard', 'Mustard'),('celery', 'Celery'),('sulfites', 'Sulfites'),],validators=[Optional()])
     primary_goal = SelectField('Primary Goal',choices=[('Lose', 'Lose Weight'),('Maintain', 'Maintain Weight'),('Gain', 'Gain Weight')],validators=[DataRequired()])
-    health_conditions = MultiCheckboxField('Health Conditions',choices=[('Diabetes', 'Diabetes'),('PCOS', 'PCOS'),('Thyroid', 'Thyroid')],validators=[Optional()])
+    health_conditions = MultiCheckboxField('Health Conditions',choices=[('Diabetes', 'Diabetes'),('PCOS', 'PCOS'),('Thyroid', 'Thyroid'),('Other','Other')],validators=[Optional()])
+    other_health_condition=StringField('If Other, specify here', validators=[Optional()])
     activity_level = SelectField('Activity Level',choices=[('Sedentary', 'Sedentary'),('Lightly Active', 'Lightly Active'),('Moderately Active', 'Moderately Active'),('Very Active', 'Very Active')],validators=[DataRequired()])
     submit = SubmitField("Submit")
+
+class OwnRecipeForm(FlaskForm):
+    meal_type = SelectField('Meal Type',choices=[('Breakfast', 'Breakfast'), ('Lunch', 'Lunch'), ('Dinner', 'Dinner')],validators=[DataRequired()])
+    meal_name = StringField('Meal Name', validators=[DataRequired()])
+    calories = IntegerField('Calories', validators=[DataRequired()])
+    recipe = TextAreaField('Recipe(Ingredients and Instructions)', validators=[DataRequired()])
+    submit = SubmitField("Add Meal")

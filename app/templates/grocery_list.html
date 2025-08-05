@@ -1,8 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
-  <div class="container mt-5">
-    <h2>Grocery List</h2>
-    <p>Your grocery list will be auto-generated based on your meal plan. Coming soon!</p>
+  <div class="container mt-4">
+    <a href="{{ url_for('mealplan_daily') }}" class="btn btn-outline-secondary mb-3">← Back to Meal Plan</a>
+    <h2 class="mb-3">Grocery List</h2>
+
+    {% if ingredients %}
+      <ul class="list-group">
+        {% for ingredient in ingredients %}
+          <li class="list-group-item">- {{ ingredient }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="alert alert-info" role="alert">
+        No ingredients found for your current meal plan.
+      </div>
+    {% endif %}
   </div>
 {% endblock %}
-

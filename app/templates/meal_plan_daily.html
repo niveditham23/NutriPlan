@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4">Meal Plan for the Day!</h2>
+{% for meal_type in ['Breakfast', 'Lunch', 'Dinner'] %}
+  <div class="mb-4 p-3 border rounded">
+    <h4>{{ meal_type }}</h4>
+    {% if meals[meal_type] %}
+      <p>
+        <strong>{{ meals[meal_type]['meal_name'] }}</strong> – {{ meals[meal_type]['calories'] }} kcal
+      </p>
+    {% else %}
+      <p>No meals available.</p>
+    {% endif %}
+    <a href="{{ url_for('swap_meal', meal_type=meal_type) }}" class="btn btn-sm btn-outline-primary">
+      Swap {{ meal_type }}
+    </a>
+  {% if meals[meal_type] %}
+  <a href="{{ url_for('recipe', meal_id=meals[meal_type].id) }}" class="btn btn-sm btn-outline-success">
+    Recipe
+  </a>
+{% endif %}
+  </div>
+{% endfor %}
+<div class="d-flex gap-3 mt-4 mb-3">
+  <a href="{{ url_for('grocery_list') }}" class="btn btn-primary">Generate Grocery List</a>
+  <a href="{{ url_for('own_recipe') }}" class="btn btn-success">Make My Own Meal</a>
+</div>
+{% endblock %}

@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>{{ meal.meal_name }} Recipe</h2>
+  <p><strong>Calories:</strong> {{ meal.calories }} kcal</p>
+  <pre style="white-space: pre-wrap;">{{ meal.recipe }}</pre>
+  <a href="{{ url_for('mealplan_daily') }}" class="btn btn-primary mt-3">Back</a>
+{% endblock %}

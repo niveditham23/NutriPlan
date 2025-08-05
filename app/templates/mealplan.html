@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5 text-center">
+    <h2 class="mb-4">Choose Your Meal Plan</h2>
+    <div class="d-flex justify-content-center gap-3">
+        <a href="{{ url_for('mealplan_daily') }}" class="btn btn-primary btn-lg">
+            Daily Meal Plan
+        </a>
+        <a href="{{ url_for('mealplan_weekly') }}" class="btn btn-primary btn-lg">
+            Weekly Meal Plan
+        </a>
+    </div>
+</div>
+{% endblock %}

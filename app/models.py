@@ -19,7 +19,7 @@ class User(UserMixin, db.Model):
     password_hash: so.Mapped[Optional[str]] = so.mapped_column(sa.String(256))
     time:so.Mapped[datetime.datetime] = so.mapped_column(sa.DateTime,default=datetime.datetime.utcnow)
     user_info:so.Mapped[list['UserInfo']]=relationship(back_populates="user")
-
+    personal_meal_data:so.Mapped[list['PersonalMealData']]=relationship(back_populates="user")
 
     def __repr__(self):
         pwh= 'None' if not self.password_hash else f'...{self.password_hash[-5:]}'
@@ -54,3 +54,31 @@ class UserInfo(db.Model):
 
     def __repr__(self):
         return f'UserInfo(id={self.id},user_id={self.user_id}, age={self.age}, gender={self.gender}, height={self.height},weight={self.weight},diet_type={self.diet_type},allergies={self.allergies},health_conditions={self.health_conditions},primary_goal={self.primary_goal},activity_level={self.activity_level})'
+
+class MealData(db.Model):
+    __tablename__ = 'meal_data'
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    meal_type: so.Mapped[str]=so.mapped_column(sa.String(60),nullable=False)
+    meal_name:so.Mapped[str] = so.mapped_column(sa.String(100),nullable=False)
+    calories:so.Mapped[int]=so.mapped_column(sa.Integer,nullable=False)
+    recipe: so.Mapped[str] = so.mapped_column(sa.Text, nullable=True)
+    diet_type: so.Mapped[str] = so.mapped_column(sa.Text, nullable=False)
+    allergens: so.Mapped[str]=so.mapped_column(sa.Text, nullable=True)
+    health_conditions: so.Mapped[str] = so.mapped_column(sa.Text, nullable=True)
+
+    def __repr__(self):
+        return f'MealData(id={self.id},meal_type={self.meal_type}, meal_name={self.meal_name}, calories={self.calories},recipe={self.recipe},diet_type={self.diet_type},allergens={self.allergens},health_conditions={self.health_conditions})'
+
+
+class PersonalMealData(db.Model):
+    __tablename__ = 'personal_meal_data'
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    user_id:so.Mapped[int] = so.mapped_column(sa.ForeignKey('users.id'), index=True)
+    meal_type: so.Mapped[str] = so.mapped_column(sa.String(60), nullable=False)
+    meal_name: so.Mapped[str] = so.mapped_column(sa.String(100), nullable=False)
+    calories: so.Mapped[int] = so.mapped_column(sa.Integer, nullable=False)
+    recipe: so.Mapped[str] = so.mapped_column(sa.Text, nullable=True)
+
+    user: so.Mapped['User'] = relationship(back_populates='personal_meal_data')
+    def __repr__(self):
+        return f'PersonalMealData(id={self.id},user_id={self.user_id},meal_type={self.meal_type}, meal_name={self.meal_name}, calories={self.calories},recipe={self.recipe})'
