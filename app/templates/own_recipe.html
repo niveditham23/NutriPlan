@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% import "bootstrap_wtf.html" as wtf %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Create my Meal</h2>
+    {{ wtf.quick_form(form, method="post") }}
+
+    <h3 class="mt-5 mb-3">My Meals</h3>
+
+    {% for meal_type, meals in meals_by_type.items() %}
+        <h4 class="mt-4">{{ meal_type }}</h4>
+        {% if meals %}
+            <div class="table-responsive mb-4">
+                <table class="table table-hover table-bordered align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th scope="col">Meal Name</th>
+                            <th scope="col" style="width: 100px;">Calories</th>
+                            <th scope="col">Recipe</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for meal in meals %}
+                        <tr>
+                            <td>{{ meal.meal_name }}</td>
+                            <td>{{ meal.calories }}</td>
+                            <td style="white-space: pre-wrap;">{{ meal.recipe }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted fst-italic">No {{ meal_type.lower() }} meals added yet.</p>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}

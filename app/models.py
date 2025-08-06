@@ -82,3 +82,17 @@ class PersonalMealData(db.Model):
     user: so.Mapped['User'] = relationship(back_populates='personal_meal_data')
     def __repr__(self):
         return f'PersonalMealData(id={self.id},user_id={self.user_id},meal_type={self.meal_type}, meal_name={self.meal_name}, calories={self.calories},recipe={self.recipe})'
+
+class RecipeVault(db.Model):
+    __tablename__ = 'recipe_vault'
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    recipe:so.Mapped[str] = so.mapped_column(sa.String(100), nullable=False)
+    diet_type: so.Mapped[str] = so.mapped_column(sa.String(100), nullable=False)
+    cuisine_type: so.Mapped[str] = so.mapped_column(sa.String(100), nullable=False)
+    protein: so.Mapped[float] = so.mapped_column(sa.Float, nullable=False)
+    carbs:so.Mapped[float] = so.mapped_column(sa.Float, nullable=False)
+    fat: so.Mapped[float] = so.mapped_column(sa.Float, nullable=False)
+    extraction_day: so.Mapped[str] = so.mapped_column(sa.String(100), default=0)
+
+    def __repr__(self):
+        return f'RecipeVault(id={self.id},recipe={self.recipe},diet_type={self.diet_type},cuisine_type={self.cuisine_type},protein={self.protein},carbs={self.carbs},fat={self.fat},extraction_day={self.extraction_day})'

@@ -257,7 +257,12 @@ def own_recipe():
 @app.route('/recipevault')
 @login_required
 def recipe_vault():
-    return render_template('recipe_vault.html', title='Recipe Vault')
+    recipes = []
+    with open('All_Diets.csv', newline='', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            recipes.append(row)
+    return render_template('recipe_vault.html', title='Recipe Vault', recipes=recipes)
 
 
 @app.route('/grocery_list')
