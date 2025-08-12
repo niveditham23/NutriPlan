@@ -1,0 +1,175 @@
+{
+  "intents": [
+    {
+      "tag": "greeting",
+      "patterns": ["Hi",
+                  "Hello",
+                  "Hey",
+                  "Good morning",
+                  "Good afternoon",
+                  "What's up?",
+                  "How's it going?",
+                  "Hey there",
+                  "Hi there, how are you?",
+                  "Hello, is this the nutrition bot?",
+                  "Good evening, I'm here for my diet plan",
+                  "Hey, can you help me with food advice?"],
+      "responses": ["Hello! How can I assist with your diet today?", "Hi there! Ready to plan some healthy meals?", "Hey! Need help with your nutrition?"]
+    },
+    {
+      "tag": "goodbye",
+      "patterns": ["Bye",
+                    "Goodbye",
+                    "See you",
+                    "Catch you later",
+                    "Thanks, bye",
+                    "Talk to you later",
+                    "I'm logging off now",
+                    "Okay, bye for now",
+                    "See you next time!",
+                    "I’m done, goodbye",
+                    "I have to go now"],
+      "responses": ["Goodbye! Stay healthy!", "See you later! Keep up the good eating habits.", "Take care! Don't forget your greens!"]
+    },
+    {
+      "tag": "thanks",
+      "patterns": ["Thanks", "Thank you", "That's helpful", "I appreciate it", "Thanks a lot", "Cheers", "Thanks for the help"],
+      "responses": ["You're welcome!", "Happy to help!", "Anytime! Let me know if you need more meal tips."]
+    },
+    {
+      "tag": "meal_plan",
+      "patterns": [
+        "What's my meal plan today?",
+        "Show me my diet plan",
+        "What should I eat today?",
+        "Tell me my meals for today",
+        "Can I get my meal schedule?",
+        "Daily meal plan please",
+        "Today’s diet plan"
+      ],
+      "responses": [
+        "Here's your meal plan: oatmeal for breakfast, grilled chicken salad for lunch, and veggie stir-fry for dinner.",
+        "Your diet today includes: Greek yogurt and berries for breakfast, quinoa bowl for lunch, and salmon with steamed broccoli for dinner.",
+        "You should start your day with a protein-rich breakfast, follow with a balanced lunch, and end with a light dinner. Want exact details?"
+      ]
+    },
+    {
+      "tag": "breakfast_ideas",
+      "patterns": [
+        "What should I have for breakfast?",
+        "Any breakfast ideas?",
+        "Breakfast?",
+        "What’s a healthy breakfast?",
+        "Suggest breakfast please",
+        "What is a good breakfast meal?",
+        "Breakfast idea?",
+        "Quick breakfast?",
+        "Can I get something for breakfast?"
+      ],
+      "responses": [
+        "Try oatmeal with almonds and banana, or Greek yogurt with chia seeds and honey.",
+        "How about scrambled eggs with spinach and toast? Or a smoothie bowl with berries and flaxseeds.",
+        "A high-protein breakfast like cottage cheese with fruit would be great. Want more options?"
+      ]
+    },
+    {
+      "tag": "lunch_ideas",
+      "patterns": [
+        "What can I eat for lunch?",
+        "Suggest a healthy lunch",
+        "Lunch options?",
+        "Any good lunch meals?",
+        "Quick lunch suggestions"
+      ],
+      "responses": [
+        "A grilled chicken salad with olive oil dressing is a great option.",
+        "Try quinoa with roasted veggies, or a tuna wrap with avocado.",
+        "Brown rice with tofu and broccoli is both filling and nutritious."
+      ]
+    },
+    {
+      "tag": "dinner_ideas",
+      "patterns": [
+        "Dinner suggestions?",
+        "What should I eat for dinner?",
+        "Give me a healthy dinner idea",
+        "Dinner plan?",
+        "Any ideas for a light dinner?"
+      ],
+      "responses": [
+        "Grilled salmon with steamed greens is perfect for dinner.",
+        "Consider a lentil soup with a side of whole wheat bread.",
+        "A veggie stir-fry with brown rice would be great and light."
+      ]
+    },
+    {
+      "tag": "snack_ideas",
+      "patterns": [
+        "Healthy snack ideas?",
+        "What can I snack on?",
+        "Give me a healthy snack",
+        "What’s a good afternoon snack?",
+        "Midday snack suggestions?"
+      ],
+      "responses": [
+        "Try hummus with carrot sticks, or a handful of almonds.",
+        "A small apple with peanut butter is healthy and satisfying.",
+        "Low-fat yogurt with honey makes a great snack."
+      ]
+    },
+    {
+      "tag": "recipe_request",
+      "patterns": [
+        "Can you give me a recipe?",
+        "I want a healthy recipe",
+        "Suggest a dinner recipe",
+        "Give me something to cook",
+        "Show me a recipe for a diet meal"
+      ],
+      "responses": [
+        "Sure! How about grilled chicken with quinoa and veggies? Want the steps?",
+        "You can make a chickpea salad with lemon dressing. Want the full recipe?",
+        "Try stir-fried tofu with garlic sauce and broccoli. Let me know if you want the ingredients."
+      ]
+    },
+    {
+      "tag": "grocery_list",
+      "patterns": [
+        "What’s on my grocery list?",
+        "Give me the grocery list",
+        "Ingredients for the meal plan?",
+        "List of things to buy?",
+        "Grocery items I need?"
+      ],
+      "responses": [
+        "Here's your grocery list: oats, bananas, eggs, chicken breast, quinoa, broccoli, Greek yogurt, spinach, and almonds.",
+        "You’ll need items like brown rice, tofu, berries, kale, whole wheat bread, and avocados for this week's meals.",
+        "I’ve added the ingredients to your grocery list based on your meal plan."
+      ]
+    },
+    {
+      "tag": "calorie_info",
+      "patterns": [
+        "How many calories in my meal?",
+        "Calorie count for today's meals?",
+        "What's the calorie intake?",
+        "Tell me my daily calorie goal",
+        "How much should I eat in a day?"
+      ],
+      "responses": [
+        "Based on your plan, you're targeting around 1800 calories today.",
+        "Today's meal plan totals approximately 1600 to 2000 calories, depending on portion size.",
+        "Your daily calorie goal is 1800 kcal. Would you like a breakdown per meal?"
+      ]
+    },
+    {
+      "tag": "no_answer",
+      "patterns": [],
+      "responses": [
+        "I'm not sure I understand. Could you rephrase?",
+        "Sorry, I didn't get that. Can you try again?",
+        "I'm still learning! Please ask something related to diet or meals."
+      ]
+    }
+  ]
+}

@@ -3,16 +3,19 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="mb-4">Create my Meal</h2>
-    {{ wtf.quick_form(form, method="post") }}
+    <h2 class="mb-4" style="color: #0d3b66; font-weight: 600;">Create my Meal</h2>
 
-    <h3 class="mt-5 mb-3">My Meals</h3>
+    <div class="mb-5 p-4 rounded shadow-sm border" style="border-color: #0d3b66;">
+        {{ wtf.quick_form(form, method="post") }}
+    </div>
+
+    <h3 class="mt-5 mb-3" style="color: #0d3b66; font-weight: 600;">My Meals</h3>
 
     {% for meal_type, meals in meals_by_type.items() %}
-        <h4 class="mt-4">{{ meal_type }}</h4>
+        <h4 class="mt-4" style="color: #376fa3;">{{ meal_type }}</h4>
         {% if meals %}
             <div class="table-responsive mb-4">
-                <table class="table table-hover table-bordered align-middle">
+                <table class="table table-hover table-bordered align-middle shadow-sm custom-table">
                     <thead class="table-dark">
                         <tr>
                             <th scope="col">Meal Name</th>
@@ -36,4 +39,22 @@
         {% endif %}
     {% endfor %}
 </div>
+
+<style>
+  .custom-table {
+    color: #2c3e50; /* Dark slate blue for text */
+    border-color: #5a7184; /* Soft medium blue-gray for borders */
+  }
+  .custom-table th,
+  .custom-table td {
+    border-color: #5a7184;
+  }
+  .custom-table thead {
+    background-color: #0d3b66 !important; /* Deep blue */
+    color: #f0f4f8 !important; /* Light text */
+  }
+  .custom-table tbody tr:hover {
+    background-color: #e9f5f5; /* Very light teal-ish on hover */
+  }
+</style>
 {% endblock %}

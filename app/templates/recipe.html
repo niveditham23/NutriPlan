@@ -1,7 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
-  <h2>{{ meal.meal_name }} Recipe</h2>
-  <p><strong>Calories:</strong> {{ meal.calories }} kcal</p>
-  <pre style="white-space: pre-wrap;">{{ meal.recipe }}</pre>
-  <a href="{{ url_for('mealplan_daily') }}" class="btn btn-primary mt-3">Back</a>
+  <div class="p-4 rounded shadow-sm border" style="border-color: #0d3b66;">
+    <h2 class="mb-3" style="color: #0d3b66; font-weight: 600;">{{ meal.meal_name }} Recipe</h2>
+    <p class="fs-5 mb-3"><strong>Calories:</strong> {{ meal.calories }} kcal</p>
+    <pre class="p-3 rounded" style="background: #f4f6f8; white-space: pre-wrap; font-size: 1rem; line-height: 1.5;">
+{{ meal.recipe }}
+    </pre>
+    <a href="{{ url_for('mealplan_daily') }}" class="btn btn-teal mt-4 px-4 py-2 shadow-sm rounded">
+      Back to Meal Plan
+    </a>
+  </div>
+
+  <style>
+    .btn-teal {
+      background-color: #0d3b66;
+      color: #f0f4f8;
+      border: none;
+      transition: background-color 0.3s ease;
+    }
+    .btn-teal:hover {
+      background-color: #376fa3;
+      color: white;
+    }
+  </style>
 {% endblock %}

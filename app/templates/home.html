@@ -1,5 +1,68 @@
 {% extends "base.html" %}
-
 {% block content %}
-<h1>Welcome</h1>
+
+<!-- Hero Section -->
+<div class="p-5 text-center bg-light rounded-3">
+    <h1 class="display-4 fw-bold">Welcome to NutriPlan</h1>
+    <p class="lead">Your personalized meal planner, recipe vault, and AI-powered grocery list — all in one place!</p>
+    <a href="{{ url_for('mealplan_daily') }}" class="btn btn-primary btn-lg m-2">Get Started</a>
+    <a href="{{ url_for('recipe_vault') }}" class="btn btn-outline-secondary btn-lg m-2">Browse Recipes</a>
+</div>
+
+<!-- Features Section -->
+<div class="row text-center mt-5">
+    <div class="col-md-3">
+        <i class="bi bi-calendar-check fs-1 text-primary"></i>
+        <h5 class="mt-2">Smart Meal Planning</h5>
+        <p class="text-muted">Plans tailored to your nutrition goals.</p>
+    </div>
+    <div class="col-md-3">
+        <i class="bi bi-book-half fs-1 text-success"></i>
+        <h5 class="mt-2">Recipe Vault</h5>
+        <p class="text-muted">Save and access your favorite dishes anytime.</p>
+    </div>
+    <div class="col-md-3">
+        <i class="bi bi-cart-check fs-1 text-warning"></i>
+        <h5 class="mt-2">Automated Grocery List</h5>
+        <p class="text-muted">Get a ready-to-shop list instantly.</p>
+    </div>
+    <div class="col-md-3">
+        <i class="bi bi-robot fs-1 text-danger"></i>
+        <h5 class="mt-2">AI Chat Assistant</h5>
+        <p class="text-muted">Ask for tips, swaps, or new meal ideas.</p>
+    </div>
+</div>
+
+<!-- Featured Recipe Section -->
+<div class="mt-5">
+    <h3 class="text-center mb-4">🍽 Today’s Featured Recipe</h3>
+    <div class="card mx-auto" style="max-width: 500px;">
+        <img src="https://images.unsplash.com/photo-1604908177522-43277cf2db2a" class="card-img-top" alt="Featured Recipe">
+        <div class="card-body text-center">
+            <h5 class="card-title">Stuffed Bell Peppers</h5>
+            <p class="card-text">A healthy, flavorful dinner packed with quinoa, veggies, and protein.</p>
+            <a href="{{ url_for('recipe_vault') }}" class="btn btn-primary">View Recipe</a>
+        </div>
+    </div>
+</div>
+
+<!-- Testimonials -->
+<div class="mt-5">
+    <h3 class="text-center mb-4">💬 What Our Users Say</h3>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="p-3 border rounded shadow-sm">
+                <p class="mb-1">"NutriPlan helped me eat healthier without the stress!"</p>
+                <small class="text-muted">— Sarah K.</small>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="p-3 border rounded shadow-sm">
+                <p class="mb-1">"The grocery list feature saves me hours every week."</p>
+                <small class="text-muted">— David M.</small>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

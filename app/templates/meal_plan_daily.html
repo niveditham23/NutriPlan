@@ -1,28 +1,75 @@
 {% extends "base.html" %}
 {% block content %}
-<h2 class="mb-4">Meal Plan for the Day!</h2>
+<h2 class="mb-4" style="color: #0d3b66; font-weight: 600;">Meal Plan for the Day!</h2>
+
+{% set meal_icons = {
+  'Breakfast': 'bi-egg-fried',
+  'Lunch': 'bi-basket',
+  'Dinner': 'bi-moon'
+} %}
+
+{% set meal_colors = {
+  'Breakfast': '#f39c12',
+  'Lunch': '#28a745',
+  'Dinner': '#6f42c1'
+} %}
+
 {% for meal_type in ['Breakfast', 'Lunch', 'Dinner'] %}
-  <div class="mb-4 p-3 border rounded">
-    <h4>{{ meal_type }}</h4>
+  <div class="mb-4 p-4 border rounded shadow-sm" style="border-color: #0d3b66;">
+    <h4 class="mb-3" style="color: {{ meal_colors[meal_type] }}; font-weight: 600;">
+      <i class="bi {{ meal_icons[meal_type] }} me-2"></i>{{ meal_type }}
+    </h4>
+
     {% if meals[meal_type] %}
-      <p>
-        <strong>{{ meals[meal_type]['meal_name'] }}</strong> – {{ meals[meal_type]['calories'] }} kcal
+      <p class="fs-5 fw-semibold text-dark mb-3">
+        <strong>{{ meals[meal_type]['meal_name'] }}</strong> &ndash; {{ meals[meal_type]['calories'] }} kcal
       </p>
     {% else %}
-      <p>No meals available.</p>
+      <p class="fst-italic text-muted mb-3">No meals available.</p>
     {% endif %}
-    <a href="{{ url_for('swap_meal', meal_type=meal_type) }}" class="btn btn-sm btn-outline-primary">
+
+    <a href="{{ url_for('swap_meal', meal_type=meal_type) }}"
+       class="btn btn-sm btn-outline-teal me-2 mb-2">
       Swap {{ meal_type }}
     </a>
-  {% if meals[meal_type] %}
-  <a href="{{ url_for('recipe', meal_id=meals[meal_type].id) }}" class="btn btn-sm btn-outline-success">
-    Recipe
-  </a>
-{% endif %}
+    {% if meals[meal_type] %}
+      <a href="{{ url_for('recipe', meal_id=meals[meal_type].id) }}"
+         class="btn btn-sm btn-outline-teal mb-2">
+        Recipe
+      </a>
+    {% endif %}
   </div>
 {% endfor %}
+
 <div class="d-flex gap-3 mt-4 mb-3">
-  <a href="{{ url_for('grocery_list') }}" class="btn btn-primary">Generate Grocery List</a>
-  <a href="{{ url_for('own_recipe') }}" class="btn btn-success">Make My Own Meal</a>
+  <a href="{{ url_for('grocery_list') }}" class="btn btn-teal px-4 py-2 shadow-sm rounded">
+    Generate Grocery List
+  </a>
+  <a href="{{ url_for('own_recipe') }}" class="btn btn-teal px-4 py-2 shadow-sm rounded">
+    Make My Own Meal
+  </a>
 </div>
+
+<style>
+  /* Custom teal colors consistent with base.html theme */
+  .btn-teal {
+    background-color: #0d3b66; /* match navbar deep blue */
+    color: #f0f4f8;
+    border: none;
+    transition: background-color 0.3s ease;
+  }
+  .btn-teal:hover {
+    background-color: #376fa3;
+    color: #fff;
+  }
+  .btn-outline-teal {
+    color: #0d3b66;
+    border: 1.5px solid #0d3b66;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  .btn-outline-teal:hover {
+    background-color: #0d3b66;
+    color: #f0f4f8;
+  }
+</style>
 {% endblock %}

@@ -4,7 +4,7 @@ from idlelib.outwin import file_line_progs
 from selectors import SelectSelector
 from sqlalchemy import select,or_,not_,and_
 from cffi.verifier import set_tmpdir
-from flask import render_template, redirect, url_for, flash, request, send_file, send_from_directory, session
+from flask import render_template, redirect, url_for, flash, request, send_file, send_from_directory, session,jsonify
 from app import app
 from app.models import User, UserInfo, MealData, PersonalMealData
 from app.forms import ChooseForm, LoginForm, RegistrationForm, UserInfoForm,OwnRecipeForm
@@ -17,6 +17,16 @@ import io
 from datetime import datetime
 import re
 from collections import Counter
+import pandas as pd
+from flask import request
+import numpy as np
+import tensorflow as tf
+import pickle
+import json
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+import spacy
+nlp = spacy.load("en_core_web_sm")
+
 
 
 @app.route("/")
@@ -203,12 +213,16 @@ def swap_meal(meal_type):
     i = (i + 1) % len(meals)
     session['meal_indices'][meal_type] = i
 
-    session.setdefault('meals', {})
     meal = meals[i]
-    session['meals'][meal_type] = {
-        'meal_name': meal.meal_name,
-        'calories': meal.calories
-    }
+
+    # Save the selected meal ID in the session for the grocery list later
+    session.setdefault('selected_meals', {})
+    session['selected_meals'][meal_type] = meal.id  # Store actual meal id
+
+    # Also update meal_indices if you still want to keep track of the index
+    if 'meal_indices' not in session:
+        session['meal_indices'] = {}
+    session['meal_indices'][meal_type] = i
 
     session.modified = True
     return redirect(url_for('mealplan_daily'))
@@ -254,65 +268,162 @@ def own_recipe():
 
     return render_template('own_recipe.html', title='Own Recipe', form=form, meals_by_type=meals_by_type)
 
-@app.route('/recipevault')
+@app.route('/recipevault', methods=['GET', 'POST'])
 @login_required
 def recipe_vault():
-    recipes = []
-    with open('All_Diets.csv', newline='', encoding='utf-8') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            recipes.append(row)
-    return render_template('recipe_vault.html', title='Recipe Vault', recipes=recipes)
+    df = pd.read_csv('All_Diets.csv')
 
+    # Get unique diet and cuisine types for dropdowns
+    diet_types = sorted(df['Diet_type'].dropna().unique())
+    cuisine_types = sorted(df['Cuisine_type'].dropna().unique())
+
+    # Default: show no recipes
+    filtered_recipes = []
+
+    if request.method == 'POST':
+        selected_diet = request.form.get('diet_type')
+        selected_cuisine = request.form.get('cuisine_type')
+
+        # Apply filters
+        filtered_recipes = df[
+            (df['Diet_type'] == selected_diet) &
+            (df['Cuisine_type'] == selected_cuisine)
+        ].to_dict(orient='records')
+
+    return render_template('recipe_vault.html',
+                           title='Recipe Vault',
+                           diet_types=diet_types,
+                           cuisine_types=cuisine_types,
+                           recipes=filtered_recipes)
+
+
+VERB_PREFIXES = [
+    "add", "bake", "blend", "boil", "chop", "combine", "cook", "drizzle", "fill",
+    "fry", "garnish", "grill", "heat", "mix", "preheat", "roast", "sauté", "serve",
+    "spread", "stir", "toast", "top", "use"
+]
+
+UNITS = ['cup', 'cups', 'tbsp', 'tsp', 'slice', 'slices', 'block', 'clove', 'cloves',
+         'gram', 'grams', 'ml', 'oz', 'lb', 'kg', 'teaspoon', 'tablespoon']
+
+def extract_ingredients(text):
+    lines = text.splitlines()
+    ingredients = set()
+
+    for line in lines:
+        line = line.strip().lower()
+
+        # Skip empty lines, headers, or instruction lines starting with "." or digits
+        if (not line or
+            "instruction" in line or
+            "ingredients" in line or
+            line.startswith('.') or
+            re.match(r'^\d', line)):
+            continue
+
+        # Skip lines that start with cooking verbs (to avoid instruction lines)
+        if any(line.startswith(verb) for verb in VERB_PREFIXES):
+            continue
+
+        # Remove bullets or leading dashes
+        line = re.sub(r"^[-•]\s*", "", line)
+
+        # Split compound lines on commas or dashes (for ingredients listed together)
+        parts = re.split(r"[,-]", line)
+        for part in parts:
+            part = part.strip()
+
+            # Remove quantities and units (like '½ cup')
+            part = re.sub(r'\b(\d+\/\d+|\d+\s?\d*|½|¼|¾)\s*(' + '|'.join(UNITS) + r')?\b', '', part)
+            part = part.strip()
+
+            if not part or any(part.startswith(v) for v in VERB_PREFIXES):
+                continue
+
+            # Use SpaCy to detect nouns (likely ingredient)
+            doc = nlp(part)
+            for token in doc:
+                if token.pos_ in ['NOUN', 'PROPN'] and len(token.text) > 2:
+                    ingredients.add(part)
+                    break
+
+    # Final cleanup
+    cleaned = {i.strip() for i in ingredients if i and len(i) > 2 and i != 'ingredients'}
+    return sorted(cleaned)
 
 @app.route('/grocery_list')
 @login_required
 def grocery_list():
-    import re
+    selected_meal_ids = session.get('selected_meals', {})
+    if not selected_meal_ids:
+        flash('No meals selected yet.', 'warning')
+        return redirect(url_for('mealplan_daily'))
 
-    meal_indices = session.get('meal_indices', {})
-    ingredients_set = set()
+    meals = db.session.execute(
+        select(MealData).where(MealData.id.in_(selected_meal_ids.values()))
+    ).scalars().all()
 
-    for meal_type in ['Breakfast', 'Lunch', 'Dinner']:
-        # Get both public and personal meals
-        public_meals = MealData.query.filter_by(meal_type=meal_type).all()
-        personal_meals = PersonalMealData.query.filter_by(user_id=current_user.id, meal_type=meal_type).all()
-        all_meals = public_meals + personal_meals
+    all_ingredients = []
+    for meal in meals:
+        recipe_text = meal.recipe
+        ingredients = extract_ingredients(recipe_text)
+        all_ingredients.extend(ingredients)
 
-        i = meal_indices.get(meal_type, 0)
-        if i < len(all_meals):
-            meal = all_meals[i]
-        else:
-            continue
+    # Remove duplicates and sort
+    grocery_list = sorted(set(all_ingredients))
 
-        if not meal or not meal.recipe:
-            continue
-
-        lines = meal.recipe.splitlines()
-        for line in lines:
-            line = line.strip()
-
-            if not line or line.lower().startswith("instructions") or re.match(r"^\d+\.", line):
-                continue
-            if any(word in line.lower() for word in ["cook", "mix", "drizzle", "spread", "toast", "add", "combine", "serve", "garnish", "bake", "grill"]):
-                continue
-            if line.endswith("."):
-                continue
-
-            line = re.sub(r"^[-•]\s*", "", line)
-
-            parts = [part.strip() for part in line.split(',') if part.strip()]
-            ingredients_set.update(parts)
-
-    ingredients = sorted(ingredients_set)
-
-    return render_template("grocery_list.html", title="Grocery List", ingredients=ingredients)
+    return render_template('grocery_list.html',title='Grocery List' ,ingredients=grocery_list)
 
 
 @app.route('/notifications')
 @login_required
 def notifications():
     return render_template('notifications.html', title='Notifications')
+
+
+# Load your trained model and preprocessing objects once when the app starts
+model = tf.keras.models.load_model('chatbot_model/chatbot_model.h5')
+
+with open('chatbot_model/tokenizer.pickle', 'rb') as handle:
+    tokenizer = pickle.load(handle)
+
+with open('chatbot_model/label_encoder.pickle', 'rb') as enc:
+    lbl_encoder = pickle.load(enc)
+
+# Load intents
+with open('intents.json') as file:
+    intents = json.load(file)
+
+def preprocess_text(text):
+    return text.lower()
+
+@app.route('/chatbot-message', methods=['POST'])
+@login_required
+def chatbot_message():
+    user_input = request.json.get('message')
+
+    sequence = tokenizer.texts_to_sequences([user_input])
+    padded_sequence = pad_sequences(sequence, truncating='post', maxlen=20)
+
+    predictions = model.predict(padded_sequence)[0]
+    predicted_index = np.argmax(predictions)
+    confidence = predictions[predicted_index]
+    predicted_tag = lbl_encoder.inverse_transform([predicted_index])[0]
+
+    print(f"User: {user_input}, Tag: {predicted_tag}, Confidence: {confidence:.2f}")
+
+    print(f"Prediction: {predictions}")
+    print(f"Confidence: {confidence:.2f}, Predicted Tag: {predicted_tag}")
+    if confidence < 0.0:
+        predicted_tag = "no_answer"
+
+    for intent in intents["intents"]:
+        if intent["tag"] == predicted_tag:
+            response = random.choice(intent["responses"])
+            return jsonify({'response': response})
+
+    return jsonify({'response': "Sorry, I didn’t understand that."})
+
 
 
 @app.route('/profile')
@@ -342,10 +453,7 @@ def logout():
     return redirect(url_for('home'))
 
 
-# Error handlers
-# See: https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
 
-# Error handler for 403 Forbidden
 @app.errorhandler(403)
 def error_403(error):
     return render_template('errors/403.html', title='Error'), 403
@@ -365,86 +473,3 @@ def error_500(error):
     return render_template('errors/500.html', title='Error'), 500
 
 
-
-# <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
-#   <div class="container-fluid">
-#     <a class="navbar-brand" href="{{ url_for('home') }}">NutriPlan</a>
-#
-#     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
-#       aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-#       <span class="navbar-toggler-icon"></span>
-#     </button>
-#
-#     <div class="collapse navbar-collapse justify-content-between" id="navbarNavDropdown">
-#       <ul class="navbar-nav flex-grow-1 d-flex justify-content-start gap-3">
-#         <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}">Home</a></li>
-#         {% if current_user.is_authenticated %}
-#           <li class="nav-item"><a class="nav-link" href="{{ url_for('meal_plan') }}">Meal Plan</a></li>
-#           <li class="nav-item"><a class="nav-link" href="{{ url_for('recipe_vault') }}">Recipe Vault</a></li>
-#           <li class="nav-item"><a class="nav-link" href="{{ url_for('grocery_list') }}">Grocery List</a></li>
-#         {% endif %}
-#       </ul>
-#
-#       <ul class="navbar-nav d-flex align-items-center gap-3">
-#         {% if current_user.is_authenticated %}
-#           <li class="nav-item">
-#             <a class="nav-link" href="{{ url_for('notifications') }}">
-#               <i class="bi bi-bell fs-4"></i>
-#             </a>
-#           </li>
-#           <li class="nav-item dropdown">
-#             <a class="nav-link dropdown-toggle" href="#" id="navbarProfileDropdown" role="button"
-#               data-bs-toggle="dropdown" aria-expanded="false">
-#               <i class="bi bi-person-circle fs-4"></i>
-#             </a>
-#             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarProfileDropdown">
-#               <li><a class="dropdown-item" href="{{ url_for('profile') }}">My Profile</a></li>
-#               <li><hr class="dropdown-divider"></li>
-#               <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}">Logout</a></li>
-#             </ul>
-#           </li>
-#         {% else %}
-#           <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
-#           <li class="nav-item"><a class="nav-link" href="{{ url_for('register') }}">Register</a></li>
-#         {% endif %}
-#       </ul>
-#     </div>
-#   </div>
-# </nav>
-#
-# Profile.html
-# {% extends "base.html" %}
-#
-# {% block content %}
-# <h4 class="mb-3">Profile and Preferences</h4>
-# <div class="row mb-5">
-#     <div class="col-lg-6">
-#         <div class="table-responsive">
-#             <table class="table table-bordered">
-#                 <thead class="table-success">
-#                     <tr><th>Full Name</th><td>{{ user.full_name }}</td></tr>
-#                     <tr><th>Email</th><td>{{ user.email }}</td></tr>
-#                 </thead>
-#             </table>
-#
-#             {% if user_info %}
-#             <table class="table table-bordered">
-#                 <thead class="table-success">
-#                     <tr><th>Age</th><td>{{ user_info.age }}</td></tr>
-#                     <tr><th>Gender</th><td>{{ user_info.gender }}</td></tr>
-#                     <tr><th>Height (cm)</th><td>{{ user_info.height }}</td></tr>
-#                     <tr><th>Weight (kg)</th><td>{{ user_info.weight }}</td></tr>
-#                     <tr><th>Diet Type</th><td>{{ user_info.diet_type }}</td></tr>
-#                     <tr><th>Allergies</th><td>{{ user_info.allergies or 'None' }}</td></tr>
-#                     <tr><th>Health Conditions</th><td>{{ user_info.health_conditions or 'None' }}</td></tr>
-#                     <tr><th>Primary Goal</th><td>{{ user_info.primary_goal }}</td></tr>
-#                     <tr><th>Activity Level</th><td>{{ user_info.activity_level }}</td></tr>
-#                 </thead>
-#             </table>
-#             {% else %}
-#             <p class="text-muted">No health info added yet.</p>
-#             {% endif %}
-#         </div>
-#     </div>
-# </div>
-# {% endblock %}
