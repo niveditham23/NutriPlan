@@ -1,34 +1,55 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <div class="p-4 rounded shadow-sm border" style="border-color: #0d3b66;">
+<div class="p-4 rounded shadow-sm border" style="border-color: #0d3b66; position: relative;">
+
+    <!-- Export PDF Button Top Right -->
+    <a href="{{ url_for('download_grocery_pdf') }}"
+   class="btn btn-danger" style="position: absolute; top: 10px; right: 10px;">
+   <i class="bi bi-file-earmark-pdf"></i> Export PDF
+</a>
+
     <h2 class="mb-4" style="color: #0d3b66; font-weight: 600;">Grocery List</h2>
 
     {% if ingredients %}
-      <ul class="list-group mb-4">
-        {% for item in ingredients %}
-          <li class="list-group-item">{{ item }}</li>
-        {% endfor %}
-      </ul>
+    <form method="POST" action="{{ url_for('update_checkbox') }}">
+        <ul class="list-group mb-4">
+            {% for item in ingredients %}
+            <li class="list-group-item">
+                <input type="checkbox" name="checked_items" value="{{ item }}"
+                    {% if session.get('checked_items') and item in session.get('checked_items') %}checked{% endif %}>
+                {{ item }}
+            </li>
+            {% endfor %}
+        </ul>
+        <button type="submit" class="btn btn-teal">Save Progress</button>
+    </form>
     {% else %}
-      <p class="fst-italic text-muted">Your grocery list is empty.</p>
+    <p class="fst-italic text-muted">Your grocery list is empty.</p>
     {% endif %}
 
-    <a href="{{ url_for('mealplan_daily') }}" class="btn btn-teal px-4 py-2 shadow-sm rounded">
-      ← Back to Meal Plan
-    </a>
-  </div>
+</div>
 
-  <style>
-    .btn-teal {
-      background-color: #0d3b66;
-      color: #f0f4f8;
-      border: none;
-      transition: background-color 0.3s ease;
-    }
-    .btn-teal:hover {
-      background-color: #376fa3;
-      color: white;
-    }
-  </style>
+<style>
+.btn-teal {
+    background-color: #0d3b66;
+    color: #f0f4f8;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+.btn-teal:hover {
+    background-color: #376fa3;
+    color: white;
+}
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+.btn-danger:hover {
+    background-color: #b02a37;
+    color: white;
+}
+</style>
 {% endblock %}

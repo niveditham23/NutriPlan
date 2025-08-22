@@ -2,71 +2,74 @@
 {% import "bootstrap_wtf.html" as wtf %}
 
 {% block content %}
-    <h1>Let's get to know you!</h1>
-    <h3><u>Personal Information</u></h3>
-  <div class="container">
+
+<style>
+    /* Heading styles */
+    .section-heading {
+        color: #0b3d91; /* dark blue */
+        display: flex;
+        align-items: center;
+        gap: 10px; /* space between icon and text */
+        font-weight: bold;
+        font-size: 1.5rem;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .section-heading i {
+        font-size: 2rem; /* slightly bigger than text */
+    }
+</style>
+
+<h1>Let's get to know you!</h1>
+
+<!-- Personal Information -->
+<div class="section-heading">
+    <i class="bi bi-person-circle"></i>
+    <span>Personal Information</span>
+</div>
+<div class="container">
     <form method="post" action="">
-      {{ form.hidden_tag() }}
-      {{ wtf.form_field(form.age) }}
-      {{ wtf.form_field(form.gender) }}
+        {{ form.hidden_tag() }}
+        {{ wtf.form_field(form.age) }}
+        {{ wtf.form_field(form.gender) }}
+        {{ wtf.form_field(form.height) }}
+        {{ wtf.form_field(form.weight) }}
 
-      <div class="form-group">
-        <label for="height">Height (in cm): <span id="height_value">{{ form.height.data or 0 }}</span></label>
-        <input
-          type="range"
-          id="height"
-          name="{{ form.height.name }}"
-          min="100" max="300"
-          value="{{ form.height.data or 0 }}"
-          oninput="document.getElementById('height_value').innerText = this.value"
-          class="form-control-range"
-        >
-      </div>
-
-      <div class="form-group">
-        <label for="weight">Weight (in kg): <span id="weight_value">{{ form.weight.data or 0 }}</span></label>
-        <input
-          type="range"
-          id="weight"
-          name="{{ form.weight.name }}"
-          min="30" max="200"
-          value="{{ form.weight.data or 0 }}"
-          oninput="document.getElementById('weight_value').innerText = this.value"
-          class="form-control-range"
-        >
-      </div>
-        <p>
-        <h3><u>Dietary Preferences</u></h3>
-        </p>
-      {{ wtf.form_field(form.diet_type) }}
-      {{ wtf.form_field(form.allergies) }}
-        <h3><u>Health goals</u></h3>
-      {{ wtf.form_field(form.primary_goal) }}
-
-        <div class="form-group">
-          <label>Health Conditions:</label><br>
-          {% set health_data = form.health_conditions.data or [] %}
-          {% for value, label in form.health_conditions.choices %}
-            <div class="form-check">
-              <label class="form-check-label">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  name="{{ form.health_conditions.name }}"
-                  value="{{ value }}"
-                  {% if value in health_data %}checked{% endif %}
-                > {{ label }}
-              </label>
+        <!-- Dietary Preferences -->
+        <div class="section-heading">
+            <i class="bi bi-egg-fried"></i>
+            <span>Dietary Preferences</span>
         </div>
-  {% endfor %}
+        {{ wtf.form_field(form.diet_type) }}
+        {{ wtf.form_field(form.allergies) }}
+
+        <!-- Health Goals -->
+        <div class="section-heading">
+            <i class="bi bi-heart-pulse"></i>
+            <span>Health Goals</span>
+        </div>
+        {{ wtf.form_field(form.primary_goal) }}
+        <div class="form-group">
+            <label>Health Conditions:</label><br>
+            {% set health_data = form.health_conditions.data or [] %}
+            {% for value, label in form.health_conditions.choices %}
+                <div class="form-check">
+                    <label class="form-check-label">
+                        <input class="form-check-input" type="checkbox" name="{{ form.health_conditions.name }}" value="{{ value }}"
+                               {% if value in health_data %}checked{% endif %}>
+                        {{ label }}
+                    </label>
+                </div>
+            {% endfor %}
+        </div>
+
+        {{ wtf.form_field(form.other_health_condition) }}
+        {{ wtf.form_field(form.activity_level) }}
+        {{ wtf.form_field(form.submit) }}
+
+        <p><small>You can edit this anytime in your profile.</small></p>
+    </form>
 </div>
 
-      {{ wtf.form_field(form.other_health_condition) }}
-      {{ wtf.form_field(form.activity_level) }}
-      {{ wtf.form_field(form.submit) }}
-        <p>
-        <small>You can edit this anytime in your profile.</small>
-        </p>
-    </form>
-  </div>
 {% endblock %}

@@ -112,9 +112,6 @@
             </ul>
             <ul class="navbar-nav ms-auto">
                 {% if current_user.is_authenticated %}
-                    <li class="nav-item me-2">
-                        <a class="nav-link" href="{{ url_for('notifications') }}"><i class="bi bi-bell fs-5"></i></a>
-                    </li>
                     <li class="nav-item dropdown me-2">
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-person-circle fs-5"></i></a>
                         <ul class="dropdown-menu dropdown-menu-end">
@@ -145,7 +142,7 @@
     {% endwith %}
 </div>
 
-<!-- Main Content -->
+
 <div class="container my-4">
     {% block content %}{% endblock content %}
 </div>
@@ -187,21 +184,21 @@
   }
 
   function sendMessage() {
-    const input = document.getElementById('chatbot-input');
+    const input = document.getElementById('chatbot-input'); //read user input
     const message = input.value.trim();
-    if (!message) return;
+    if (!message) return; //ignore empty msgs
 
-    appendMessage('You', message);
+    appendMessage('You', message);//display user msg
     input.value = '';
 
     fetch('/chatbot-message', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: message })
+        body: JSON.stringify({ message: message }) //send msg to backend
     })
     .then(res => res.json())
     .then(data => {
-        appendMessage('Bot', data.response);
+        appendMessage('Bot', data.response);//display reply
     })
     .catch(() => {
         appendMessage('Bot', "Oops! Something went wrong. Please try again.");
@@ -211,8 +208,8 @@
   function appendMessage(sender, text) {
     const msg = document.createElement('div');
     msg.innerHTML = `<strong>${sender}:</strong> ${text}`;
-    chatbotMessages.appendChild(msg);
-    chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+    chatbotMessages.appendChild(msg);//appends to message container
+    chatbotMessages.scrollTop = chatbotMessages.scrollHeight; //scroll
   }
 </script>
 

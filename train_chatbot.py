@@ -7,7 +7,7 @@ from tensorflow.keras.layers import Dense, Dropout, Embedding, GlobalAveragePool
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-# Load the intents file
+# Load the intents,patterns,responses file
 with open('intents.json') as file:
     data = json.load(file)
 
@@ -22,7 +22,7 @@ for intent in data['intents']:
         training_labels.append(intent['tag'])
     responses[intent['tag']] = intent['responses']
 
-# Encode labels using LabelEncoder
+# convert tags to numbers
 lbl_encoder = LabelEncoder()
 lbl_encoder.fit(training_labels)
 training_labels_encoded = lbl_encoder.transform(training_labels)
@@ -43,7 +43,7 @@ oov_token = "<OOV>"
 tokenizer = Tokenizer(num_words=vocab_size, oov_token=oov_token)
 tokenizer.fit_on_texts(training_sentences)
 sequences = tokenizer.texts_to_sequences(training_sentences)
-padded_sequences = pad_sequences(sequences, truncating='post', maxlen=max_len)
+padded_sequences = pad_sequences(sequences, truncating='post', maxlen=max_len) #pads so all input have same length
 
 # Build the model
 model = Sequential()

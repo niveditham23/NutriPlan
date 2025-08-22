@@ -351,7 +351,7 @@ def reset_db():
     "calories": 450,
     "recipe": """
     Ingredients:
-    - 2 bell peppers, halved
+    - 2 bell pepper, halved
     - ½ cup cooked quinoa
     - ¼ cup black beans, corn, tomato sauce
 

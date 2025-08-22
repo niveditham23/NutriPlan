@@ -1,6 +1,6 @@
 from flask_login import current_user
 from flask_wtf import FlaskForm
-from wtforms import SubmitField, HiddenField, StringField, PasswordField, BooleanField, SelectField,IntegerField,SelectMultipleField,widgets
+from wtforms import SubmitField, HiddenField, StringField, PasswordField, BooleanField, SelectField,IntegerField,SelectMultipleField,widgets,FloatField
 from wtforms.fields.simple import TextAreaField
 from wtforms.validators import DataRequired, EqualTo, NumberRange, ValidationError, Email, Optional, Length
 from app import db
@@ -57,8 +57,8 @@ class MultiCheckboxField(SelectMultipleField):
 class UserInfoForm(FlaskForm):
     age = IntegerField('Age', validators=[DataRequired(), NumberRange(min=1, max=120)])
     gender = SelectField('Gender',choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')],validators=[DataRequired()])
-    height = IntegerField('Height (in cm)', validators=[DataRequired(), NumberRange(min=100, max=300)])
-    weight = IntegerField('Weight (in kg)', validators=[DataRequired(), NumberRange(min=30, max=200)])
+    height = FloatField('Height (in cm)', validators=[DataRequired(), NumberRange(min=100, max=300)])
+    weight = FloatField('Weight (in kg)', validators=[DataRequired(), NumberRange(min=30, max=200)])
     diet_type = SelectField('Diet Type',choices=[('Veg', 'Vegetarian'),('Non-Veg', 'Non-Vegetarian'),('Vegan', 'Vegan'),('Keto', 'Keto'),('Paleo', 'Paleo'),('Mediterranean','Mediterranean'),('Other', 'Other')],validators=[DataRequired()])
     allergies = MultiCheckboxField('Allergies',choices=[('Gluten', 'Gluten'),('Treenut', 'Treenut'),('soya', 'Soya'),('milk', 'Milk'),('eggs', 'Eggs'),('fish', 'Fish'),('shellfish', 'Shellfish'),('wheat', 'Wheat'),('peanuts', 'Peanuts'),('sesame', 'Sesame'),('mustard', 'Mustard'),('celery', 'Celery'),('sulfites', 'Sulfites'),],validators=[Optional()])
     primary_goal = SelectField('Primary Goal',choices=[('Lose', 'Lose Weight'),('Maintain', 'Maintain Weight'),('Gain', 'Gain Weight')],validators=[DataRequired()])

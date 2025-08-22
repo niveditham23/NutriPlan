@@ -14,6 +14,7 @@ from app import db
 from urllib.parse import urlsplit
 import csv
 import io
+from fpdf import FPDF
 from datetime import datetime
 import re
 from collections import Counter
@@ -94,7 +95,7 @@ def user_info():
 
         db.session.commit()
         flash('Your information has been updated!', 'success')
-        return render_template('dashboard.html', title='Dashboard')
+        return render_template('home.html', title='Home Page')
 
     return render_template('user_info.html', title='User Info', form=form)
 
@@ -271,9 +272,9 @@ def own_recipe():
 @app.route('/recipevault', methods=['GET', 'POST'])
 @login_required
 def recipe_vault():
-    df = pd.read_csv('All_Diets.csv')
+    df = pd.read_csv('All_Diets.csv') #load data into pandas
 
-    # Get unique diet and cuisine types for dropdowns
+
     diet_types = sorted(df['Diet_type'].dropna().unique())
     cuisine_types = sorted(df['Cuisine_type'].dropna().unique())
 
@@ -288,7 +289,7 @@ def recipe_vault():
         filtered_recipes = df[
             (df['Diet_type'] == selected_diet) &
             (df['Cuisine_type'] == selected_cuisine)
-        ].to_dict(orient='records')
+        ].to_dict(orient='records') #converted to dictionary
 
     return render_template('recipe_vault.html',
                            title='Recipe Vault',
@@ -307,7 +308,7 @@ UNITS = ['cup', 'cups', 'tbsp', 'tsp', 'slice', 'slices', 'block', 'clove', 'clo
          'gram', 'grams', 'ml', 'oz', 'lb', 'kg', 'teaspoon', 'tablespoon']
 
 def extract_ingredients(text):
-    lines = text.splitlines()
+    lines = text.splitlines() #slplit recipes into lines
     ingredients = set()
 
     for line in lines:
@@ -321,47 +322,46 @@ def extract_ingredients(text):
             re.match(r'^\d', line)):
             continue
 
-        # Skip lines that start with cooking verbs (to avoid instruction lines)
+        # Skip lines that start with cooking verbs
         if any(line.startswith(verb) for verb in VERB_PREFIXES):
             continue
 
-        # Remove bullets or leading dashes
+        # Remove bullets or dashes
         line = re.sub(r"^[-•]\s*", "", line)
 
-        # Split compound lines on commas or dashes (for ingredients listed together)
+        # Split compound lines on commas or dashes
         parts = re.split(r"[,-]", line)
         for part in parts:
             part = part.strip()
 
-            # Remove quantities and units (like '½ cup')
+            # Remove quantities and units
             part = re.sub(r'\b(\d+\/\d+|\d+\s?\d*|½|¼|¾)\s*(' + '|'.join(UNITS) + r')?\b', '', part)
             part = part.strip()
 
             if not part or any(part.startswith(v) for v in VERB_PREFIXES):
                 continue
 
-            # Use SpaCy to detect nouns (likely ingredient)
+            # Uses spcy to detect nouns
             doc = nlp(part)
             for token in doc:
                 if token.pos_ in ['NOUN', 'PROPN'] and len(token.text) > 2:
                     ingredients.add(part)
                     break
 
-    # Final cleanup
+    # remove duplicates,irrelevant words
     cleaned = {i.strip() for i in ingredients if i and len(i) > 2 and i != 'ingredients'}
     return sorted(cleaned)
 
 @app.route('/grocery_list')
 @login_required
 def grocery_list():
-    selected_meal_ids = session.get('selected_meals', {})
+    selected_meal_ids = session.get('selected_meals', {}) #get users meal from session
     if not selected_meal_ids:
         flash('No meals selected yet.', 'warning')
         return redirect(url_for('mealplan_daily'))
 
     meals = db.session.execute(
-        select(MealData).where(MealData.id.in_(selected_meal_ids.values()))
-    ).scalars().all()
+        select(MealData).where(MealData.id.in_(selected_meal_ids.values()))).scalars().all()
 
     all_ingredients = []
     for meal in meals:
@@ -369,20 +369,79 @@ def grocery_list():
         ingredients = extract_ingredients(recipe_text)
         all_ingredients.extend(ingredients)
 
-    # Remove duplicates and sort
+    # Remove duplicates and sorts
     grocery_list = sorted(set(all_ingredients))
 
-    return render_template('grocery_list.html',title='Grocery List' ,ingredients=grocery_list)
+    # Store grocery list in session for download
+    session['grocery_list'] = grocery_list
+
+    return render_template('grocery_list.html', title='Grocery List', ingredients=grocery_list)
 
 
-@app.route('/notifications')
+def get_current_grocery_list():
+    selected_meal_ids = session.get('selected_meals', {}) #retrieve meal from users ession
+    if not selected_meal_ids:
+        flash('No meals selected yet.', 'warning')
+        return None
+
+    meals = db.session.execute(
+        select(MealData).where(MealData.id.in_(selected_meal_ids.values()))).scalars().all()
+
+    all_ingredients = []
+    for meal in meals:
+        all_ingredients.extend(extract_ingredients(meal.recipe)) #add all ingredients to list
+
+    grocery_list = sorted(set(all_ingredients)) #remove dupli
+    return grocery_list
+
+
+@app.route('/update_checkbox', methods=['POST'])
 @login_required
-def notifications():
-    return render_template('notifications.html', title='Notifications')
+def update_checkbox():
+    checked_items = request.form.getlist('checked_items')
+    session['checked_items'] = checked_items
+    flash('Progress saved!', 'success')
+    return redirect(url_for('grocery_list'))
 
 
-# Load your trained model and preprocessing objects once when the app starts
+@app.route('/download_grocery_pdf')
+@login_required
+def download_grocery_pdf():
+    grocery_list = get_current_grocery_list()
+    if grocery_list is None:
+        return redirect(url_for('mealplan_daily'))
+
+    checked_items = session.get('checked_items', [])
+    remaining_items = [item for item in grocery_list if item not in checked_items]
+
+    if not remaining_items:
+        flash('All items are already checked. Nothing to export.', 'warning')
+        return redirect(url_for('grocery_list'))
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", "B", 16)
+    pdf.cell(0, 10, "Grocery List - Remaining Items", ln=True, align="C")
+    pdf.ln(10)
+    pdf.set_font("Arial", "", 12)
+    for item in remaining_items:
+        pdf.cell(0, 8, f"- {item}", ln=True) #loop through ingredients in new line
+
+    #not storeed in server
+    pdf_bytes = pdf.output(dest='S').encode('latin1')  # get PDF as bytes
+    pdf_buffer = io.BytesIO(pdf_bytes)  # put bytes into a buffer
+
+    return send_file(
+        pdf_buffer,
+        as_attachment=True,
+        download_name="grocery_list.pdf",
+        mimetype="application/pdf"
+    ) #download,filename,pdftype
+
+
+#trained tensorflow model
 model = tf.keras.models.load_model('chatbot_model/chatbot_model.h5')
+
 
 with open('chatbot_model/tokenizer.pickle', 'rb') as handle:
     tokenizer = pickle.load(handle)
@@ -394,6 +453,7 @@ with open('chatbot_model/label_encoder.pickle', 'rb') as enc:
 with open('intents.json') as file:
     intents = json.load(file)
 
+#convert user input to lowercase
 def preprocess_text(text):
     return text.lower()
 
@@ -405,6 +465,7 @@ def chatbot_message():
     sequence = tokenizer.texts_to_sequences([user_input])
     padded_sequence = pad_sequences(sequence, truncating='post', maxlen=20)
 
+    #predict intent
     predictions = model.predict(padded_sequence)[0]
     predicted_index = np.argmax(predictions)
     confidence = predictions[predicted_index]
@@ -417,6 +478,7 @@ def chatbot_message():
     if confidence < 0.0:
         predicted_tag = "no_answer"
 
+    #chooses a response
     for intent in intents["intents"]:
         if intent["tag"] == predicted_tag:
             response = random.choice(intent["responses"])
